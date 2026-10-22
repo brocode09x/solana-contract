@@ -84,3 +84,4 @@ To deploy code changes to an existing program:
 
 - **`initialize(greeting)`**: Creates a PDA (`seeds = [b"greeting", authority]`) and sets the initial message (1–200 UTF-8 bytes).
 - **`set_greeting(greeting)`**: Updates the greeting message. Only the authority wallet that initialized it can call this.
+- **`close_greeting()`**: Closes the greeting account and reclaims the locked rent SOL back to the authority wallet.
