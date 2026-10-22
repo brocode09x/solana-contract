@@ -14,6 +14,7 @@ pub mod greeting {
 
         let state = &mut ctx.accounts.greeting_state;
         state.authority = ctx.accounts.authority.key();
+        state.bump = ctx.bumps.greeting_state;
         state.message = greeting;
         msg!("Greeting initialized: {}", state.message);
         Ok(())
@@ -24,6 +25,11 @@ pub mod greeting {
 
         ctx.accounts.greeting_state.message = greeting;
         msg!("Greeting updated: {}", ctx.accounts.greeting_state.message);
+        Ok(())
+    }
+
+    pub fn close_greeting(_ctx: Context<CloseGreeting>) -> Result<()> {
+        msg!("Greeting closed and rent recovered.");
         Ok(())
     }
 }
@@ -57,21 +63,36 @@ pub struct SetGreeting<'info> {
     #[account(
         mut,
         seeds = [GREETING_SEED, authority.key().as_ref()],
-        bump,
+        bump = greeting_state.bump,
         has_one = authority
     )]
     pub greeting_state: Account<'info, GreetingState>,
     pub authority: Signer<'info>,
 }
 
+#[derive(Accounts)]
+pub struct CloseGreeting<'info> {
+    #[account(
+        mut,
+        seeds = [GREETING_SEED, authority.key().as_ref()],
+        bump = greeting_state.bump,
+        has_one = authority,
+        close = authority
+    )]
+    pub greeting_state: Account<'info, GreetingState>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+}
+
 #[account]
 pub struct GreetingState {
     pub authority: Pubkey,
+    pub bump: u8,
     pub message: String,
 }
 
 impl GreetingState {
-    pub const SPACE: usize = 8 + 32 + 4 + MAX_GREETING_BYTES;
+    pub const SPACE: usize = 8 + 32 + 1 + 4 + MAX_GREETING_BYTES;
 }
 
 #[error_code]
